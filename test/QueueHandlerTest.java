@@ -54,4 +54,45 @@ public class QueueHandlerTest {
         assertEquals(taskZero, handlerOne.finishTask());
         assertEquals(0, handlerOne.taskCount());
     }
+
+    @Test
+    public void testQueueHandlerWithTimedTasks() {
+        TaskHandler<String> handlerZero = new TaskHandler<>("Handler Zero", "handlerzero@example.com");
+        TaskHandler<String> handlerOne = new TaskHandler<>("Handler One", "handlerone@example.com");
+
+        LinkedList<TaskHandler<String>> handlers = new LinkedList<>();
+
+        handlers.add(handlerZero);
+        handlers.add(handlerOne);
+
+        QueueHandler<String> queueHandler = new QueueHandler<>();
+
+        assertEquals(0, queueHandler.taskCount());
+        assertNull(queueHandler.assignTask(handlers));
+
+        TimedTask<String> taskZero = new TimedTask<>(0, "Task Zero", 10);
+        TimedTask<String> taskOne = new TimedTask<>(1, "Task One", 10);
+        TimedTask<String> taskNegativeOne = new TimedTask<>(-1, "Task Negative One", 30);
+        Task<String> taskTwo = new Task<>(2, "Task Two");
+
+        queueHandler.addTask(taskZero);
+        queueHandler.addTask(taskOne);
+        queueHandler.addTask(taskNegativeOne);
+        queueHandler.addTask(taskTwo);
+
+        assertEquals(4, queueHandler.taskCount());
+
+        assertEquals(handlerZero, queueHandler.assignTask(handlers));
+        assertEquals(handlerOne, queueHandler.assignTask(handlers));
+        assertEquals(handlerOne, queueHandler.assignTask(handlers));
+        assertEquals(handlerZero, queueHandler.assignTask(handlers));
+
+        assertEquals(30, handlerZero.estimatedTime());
+        assertEquals(2, handlerZero.taskCount());
+
+        assertEquals(20, handlerOne.estimatedTime());
+        assertEquals(2, handlerOne.taskCount());
+
+        assertEquals(0, queueHandler.taskCount());
+    }
 }
