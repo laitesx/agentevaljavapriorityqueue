@@ -2,6 +2,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class TaskHandler<T> {
+    private int estimatedTime = 0;
+
     private String name;
     private String email;
 
@@ -16,8 +18,16 @@ public class TaskHandler<T> {
         return taskQueue.size();
     }
 
+    public int estimatedTime() {
+        return estimatedTime;
+    }
+
     public void addTask(Task<T> task) {
         taskQueue.add(task);
+
+        if (task instanceof TimedTask<T>) {
+            estimatedTime += ((TimedTask<T>) task).getEstimatedMinutes();
+        }
     }
 
     public Task<T> nextTask() {
@@ -25,7 +35,13 @@ public class TaskHandler<T> {
     }
 
     public Task<T> finishTask() {
-        return taskQueue.poll();
+        Task<T> task = taskQueue.poll();
+
+        if (task instanceof TimedTask<T>) {
+            estimatedTime -= ((TimedTask<T>) task).getEstimatedMinutes();
+        }
+
+        return task;
     }
 
     public String getName() { return name; }

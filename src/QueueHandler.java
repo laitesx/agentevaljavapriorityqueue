@@ -9,22 +9,32 @@ public class QueueHandler<T> {
         priorityQueue.add(task);
     }
 
-    // Given a list of available task handlers give the next task to whichever one is net and return that handler.
-    // If no handlers are provided or the queue is empty return null.
+    // Given a list of task handlers hand out the next task. If the task isn't timed give it to whichever handler
+    // has the least tasks. If it's timed give it to the handler with the lest currently estimated time.
     public TaskHandler<T> assignTask(LinkedList<TaskHandler<T>> handlers) {
         if (handlers.isEmpty() || priorityQueue.count() == 0) {
             return null;
         }
 
+        Task<T> task = priorityQueue.poll();
         TaskHandler<T> assignedHandler = handlers.get(0);
 
-        for (int i = 1; i < handlers.size(); i++) {
-            if (handlers.get(i).taskCount() < assignedHandler.taskCount()) {
-                assignedHandler = handlers.get(i);
+        if (task instanceof TimedTask<T>) {
+            for (int i = 1; i < handlers.size(); i++) {
+                if (handlers.get(i).estimatedTime() < assignedHandler.estimatedTime()) {
+                    assignedHandler = handlers.get(i);
+                }
+            }
+        }
+        else {
+            for (int i = 1; i < handlers.size(); i++) {
+                if (handlers.get(i).taskCount() < assignedHandler.taskCount()) {
+                    assignedHandler = handlers.get(i);
+                }
             }
         }
 
-        assignedHandler.addTask(priorityQueue.poll());
+        assignedHandler.addTask(task);
 
         return assignedHandler;
     }

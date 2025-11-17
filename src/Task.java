@@ -1,4 +1,4 @@
-public class Task <T> {
+public class Task<T> {
     private Integer priority;
     private T task;
 
